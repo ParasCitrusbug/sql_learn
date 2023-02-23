@@ -1,12 +1,58 @@
-1.   question-1 :    Fetch playlist by language name
+1.    question-1 :    Fetch playlist by language name
 
-     query :       select play_list_name from play_list where play_list_language ="hindi"
+        query :       select play_list_name from play_list where play_list_language ="hindi"
 
 
+2.    question-2  : Fetch playlist by genre and artist id 
 
-2.   question-8 :  Create a bulk query for Insert Playlist
+       query   :
 
-     query :     
+	select play_list_name from play_list inner join playlist_manytomany on playlist_manytomany.play_list_id=play_list.play_list_id  inner join song on playlist_manytomany.song_id = song.song_id inner join artist on artist.artist_id = song.artist_id
+
+	select play_list_name from play_list inner join playlist_manytomany on playlist_manytomany.play_list_id=play_list.play_list_id  inner join song on playlist_manytomany.song_id = song.song_id inner join genre on genre.genre_id = song.genre_id
+
+	SELECT play_list_name
+	FROM play_list  where play_list_id in (select genre_id from genre) and play_list_id in(select artist_id FROM artist)
+
+
+3.   question-3 : Fetch Songs And Artists by Genre ID
+
+       query   :
+
+	SELECT artist.artist_name, song.song_name FROM ((song INNER JOIN artist ON song.artist_id = artist.artist_id) INNER JOIN genre ON song.genre_id = genre.genre_id);
+
+
+4.   question-4 : Fetch Playlist Detail And Song Details By Artist ID
+
+       query    :
+
+	select play_list_detail,play_list_name, song_name, song_detail, artist_name from playlist_manytomany inner join play_list on play_list.play_list_id = 	playlist_manytomany.play_list_id
+INNER join song on song.song_id = playlist_manytomany.song_id inner join artist on artist.artist_id = song.artist_id
+
+
+5.    question-5   : Fetch Artist Song Cout and by Artist ID
+
+        query      :
+
+	 select count(song_id), artist_name from song inner join artist on song.artist_id = artist.artist_id GROUP by artist.artist_id 
+
+6.    question-6   :   Fetch Artist Data and Song Data by Playlist ID
+
+	query  :
+
+	select * from artist inner join song on artist.artist_id = song.artist_id inner join playlist_manytomany on song.song_id =playlist_manytomany.song_id inner join play_list on play_list.play_list_id = playlist_manytomany.play_list_id
+
+	
+7.    question-7   :   Fetch Playlist Song Order and Artist Images by Playlist ID
+												break for next
+        query    :
+
+	select song_name, artist_name, artist_image from song inner join artist on song.artist_id = artist.artist_id where song.song_id in (select song_id from playlist_manytomany where play_list_id=5) ORDER by song_name
+
+
+8.    question-8 :  Create a bulk query for Insert Playlist
+
+        query    :     
 
  	insert into play_list (play_list_id, play_list_name, play_list_language, play_list_detail) VALUES (24 , "very low colity song" , "hindi" , "this play list is best" ),
 (24 , "most playing sing song" , "english" , "one" ),
@@ -22,44 +68,45 @@
 (34, "artist all oldsong" , "hindi" , "this play list are high duration song" )
 
 
+9.    question-9  :  Create View For Playlist, Song, and Artist Data.
 
-3.   question-2  : Fetch playlist by genre and artist id 
+        query   :
 
-     query   :
-
-
-	select play_list.play_list_name from playlist_manytomany inner join play_list on playlist_manytomany.play_list_id= (select artist_id from playlist_manytomany INNER join 	song on playlist_manytomany.song_id = song.song_id)
-
-	select play_list.play_list_name from playlist_manytomany inner join play_list on playlist_manytomany.play_list_id= (select genre_id from playlist_manytomany INNER join 	song on playlist_manytomany.song_id = song.song_id)
-
-	SELECT play_list_name
-	FROM play_list  where play_list_id in (select genre_id from genre) and play_list_id in(select artist_id FROM artist)
+	select play_list.play_list_name, play_list.play_list_language,  play_list.play_list_detail, song.song_name, song.song_language, song.song_detail, artist.artist_name, artist.artist_image, artist.artist_detail from artist inner join song on artist.artist_id = song.artist_id inner join playlist_manytomany on song.song_id =playlist_manytomany.song_id inner join play_list on play_list.play_list_id = playlist_manytomany.play_list_id
 
 
-4.   question-3 : Fetch Songs And Artists by Genre ID
+10.    question-10 :  Fetch Playlist If All Songs in Playlist Are from the same artist
+      
+          query    :
 
-     query   :
-
-	SELECT artist.artist_name, song.song_name FROM ((song INNER JOIN artist ON song.artist_id = artist.artist_id) INNER JOIN genre ON song.genre_id = genre.genre_id);
-
-
-5.   question-4 : Fetch Songs And Artists by Genre ID
-
-     query    :
-
-	select play_list_detail,play_list_name, song_name, song_detail, artist_name from playlist_manytomany inner join play_list on play_list.play_list_id = 	playlist_manytomany.play_list_id
-	INNER join song on song.song_id = playlist_manytomany.song_id inner join artist on artist.artist_id = song.artist_id
+	SELECT play_list.play_list_name AS play_list,
+count(artist.artist_id) as artist
+FROM play_list
+INNER JOIN playlist_manytomany ON play_list.play_list_id = playlist_manytomany.play_list_id
+INNER JOIN song ON playlist_manytomany.song_id = song.song_id 
+INNER JOIN artist on song.artist_id = artist.artist_id 
+GROUP BY play_list having count(DISTINCT song.artist_id) =1
 
 
-6.    question-5   :
+11.    question-11:  Fetch Playlist If All Songs in Playlist Are from the same genre
 
-	query      :
+          query   :  
+SELECT play_list.play_list_name AS play_list,
+count(genre.genre_id) as genre
+FROM play_list
+INNER JOIN playlist_manytomany ON play_list.play_list_id = playlist_manytomany.play_list_id
+INNER JOIN song ON playlist_manytomany.song_id = song.song_id 
+INNER JOIN genre on song.genre_id = genre.genre_id 
+GROUP BY play_list having count(DISTINCT song.genre_id) =1
 
-	 select count(song_id), artist_name from song inner join artist on song.artist_id = artist.artist_id GROUP by artist.artist_id 
 
-7. 	question-6   :
 
-	query  :
+12.    question-12 :  Fetch like for songs by for each playlist
 
-	
+          query   :
 
+	SELECT play_list.play_list_name, song.song_name
+FROM play_list
+INNER JOIN playlist_manytomany ON play_list.play_list_id = playlist_manytomany.play_list_id
+INNER JOIN song_like ON playlist_manytomany.song_id = song_like.song_id
+INNER JOIN song ON song.song_id = song_like.song_id
